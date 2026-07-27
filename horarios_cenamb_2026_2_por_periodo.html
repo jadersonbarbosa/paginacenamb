@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Quadro de Horários por Período — Engenharia Agrícola e Ambiental 2026.2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;600;700;900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0f2926;
+    --bg-deep: #0a1f1c;
+    --panel: #163a35;
+    --panel-2: #1c453f;
+    --line: #2a5650;
+    --cream: #f4efe2;
+    --muted: #9fc0b6;
+    --gold: #dfa63f;
+
+    --agri: #7fa653;
+    --quim: #dfa63f;
+    --fisc: #5b8ba8;
+    --matm: #a980a4;
+    --elet: #a85d3d;
+    --cien: #4aa69a;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background: radial-gradient(1200px 700px at 15% -10%, #163d37 0%, var(--bg) 55%, var(--bg-deep) 100%);
+    color: var(--cream);
+    font-family:'IBM Plex Sans', sans-serif;
+    padding: 40px 18px 80px;
+  }
+  .wrap{ max-width: 1000px; margin: 0 auto; }
+
+  header{
+    text-align:center;
+    padding-bottom: 28px;
+    margin-bottom: 30px;
+    border-bottom: 1px solid var(--line);
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    letter-spacing:.18em;
+    font-size:12px;
+    color: var(--gold);
+    text-transform:uppercase;
+    margin-bottom:14px;
+  }
+  h1{
+    font-family:'Bitter', serif;
+    font-weight:800;
+    font-size: clamp(30px, 5vw, 46px);
+    margin: 0 0 8px;
+    line-height:1.05;
+  }
+  h1 span{ color: var(--gold); }
+  .sub{ color: var(--muted); font-size:15px; max-width:560px; margin: 0 auto; }
+
+  .legend{
+    display:flex; flex-wrap:wrap; justify-content:center;
+    gap: 10px 18px; margin: 22px auto 0; font-size:12.5px; color: var(--muted);
+  }
+  .legend span{ display:flex; align-items:center; gap:7px; }
+  .dot{ width:9px; height:9px; border-radius:50%; display:inline-block; }
+
+  nav{
+    display:flex; gap:6px; overflow-x:auto; padding: 4px 0 26px;
+    justify-content:center; flex-wrap:wrap;
+  }
+  nav button{
+    font-family:'IBM Plex Mono', monospace; font-size:13px; letter-spacing:.06em;
+    background: transparent; color: var(--muted); border: 1px solid var(--line);
+    padding: 9px 18px; border-radius: 999px; cursor:pointer; transition: all .15s ease;
+    white-space:nowrap;
+  }
+  nav button:hover{ border-color: var(--gold); color: var(--cream); }
+  nav button.active{ background: var(--gold); border-color: var(--gold); color: #24180a; font-weight:600; }
+
+  .period-section{ display:none; }
+  .period-section.active{ display:block; animation: fade .25s ease; }
+  @keyframes fade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;} }
+
+  .period-title{
+    font-family:'Bitter', serif; font-size:23px; font-weight:700; margin: 4px 0 4px;
+    display:flex; align-items:baseline; gap:10px;
+  }
+  .period-title small{ font-family:'IBM Plex Mono', monospace; font-size:12px; color: var(--muted); font-weight:500; }
+  .period-sub{ color:var(--muted); font-size:13px; margin-bottom:18px; }
+
+  .grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+
+  .card{
+    background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--dept, var(--gold));
+    border-radius: 10px; padding: 16px 16px 14px; position:relative;
+  }
+  .card .code{ font-family:'IBM Plex Mono', monospace; font-size:11.5px; color: var(--muted); letter-spacing:.05em; }
+  .card h3{ font-family:'Bitter', serif; font-size:16.5px; line-height:1.25; margin: 4px 0 10px; font-weight:700; }
+  .times{ display:flex; flex-direction:column; gap:4px; margin-bottom:10px; }
+  .time-row{
+    font-family:'IBM Plex Mono', monospace; font-size:12.5px; color: var(--gold); font-weight:600;
+    display:flex; gap:8px; align-items:baseline;
+  }
+  .time-row .place{ font-family:'IBM Plex Sans', sans-serif; color: var(--muted); font-weight:400; font-size:12px; }
+  .meta{ font-size:12.8px; color: var(--muted); display:flex; flex-direction:column; gap:3px; }
+  .meta b{ color: var(--cream); font-weight:600; }
+  .badge{
+    position:absolute; top:14px; right:14px; font-family:'IBM Plex Mono', monospace; font-size:11px;
+    background: var(--panel-2); border:1px solid var(--line); color: var(--muted);
+    padding:3px 9px; border-radius:999px;
+  }
+
+  footer{
+    text-align:center; color: var(--muted); font-size:12px; margin-top: 50px;
+    padding-top: 20px; border-top: 1px solid var(--line); font-family:'IBM Plex Mono', monospace;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">CENAMB · UNIVASF · Juazeiro-BA</div>
+    <h1>Quadro de Horários <span>por Período</span></h1>
+    <p class="sub">Engenharia Agrícola e Ambiental — semestre 2026.2 · 51 turmas ofertadas</p>
+
+    <div class="legend">
+      <span><i class="dot" style="background:var(--agri)"></i>Agrárias</span>
+      <span><i class="dot" style="background:var(--quim)"></i>Química</span>
+      <span><i class="dot" style="background:var(--fisc)"></i>Física</span>
+      <span><i class="dot" style="background:var(--matm)"></i>Matemática</span>
+      <span><i class="dot" style="background:var(--elet)"></i>Elétrica</span>
+      <span><i class="dot" style="background:var(--cien)"></i>Ciências do Solo</span>
+    </div>
+  </header>
+
+  <nav id="periodNav"></nav>
+  <div id="periods"></div>
+
+  <footer>Fonte: Relatório Turma/Horário — Coordenação do Curso de Engenharia Agrícola e Ambiental · dados de 23/7/2026</footer>
+</div>
+
+<script>
+const deptOf = code => {
+  if(code.startsWith('AGRI')) return 'agri';
+  if(code.startsWith('QUIM')) return 'quim';
+  if(code.startsWith('FISC')) return 'fisc';
+  if(code.startsWith('MATM')) return 'matm';
+  if(code.startsWith('ELET')) return 'elet';
+  if(code.startsWith('CIEN')) return 'cien';
+  return 'agri';
+};
+
+// periods in display order
+const periodOrder = ['P2','P4','P5','P6','P8','P10','MIX'];
+const periodLabel = {
+  P2:'2º Período', P4:'4º Período', P5:'5º Período', P6:'6º Período',
+  P8:'8º Período', P10:'10º Período / Estágio', MIX:'Turmas Mistas / Outros Períodos'
+};
+const periodSub = {
+  P2:'Turma A2', P4:'Turma A4', P5:'Turma A5', P6:'Turma A6', P8:'Turma A8',
+  P10:'Turma 10', MIX:'Turmas abertas a mais de um período (TX, AX, BX)'
+};
+
+// each course: {period, code, name, turma, prof, occ:[{day,time,sala}]}
+const courses = [
+ // ---- 2º Período (A2) ----
+ {period:'P2', code:'MATM0118', name:'Álgebra Linear', turma:'A2', prof:'Beto Rober Bautista Saavedra', occ:[
+   {day:'SEG', time:'08:00–10:00', sala:'Sala 16'},{day:'QUA', time:'08:00–10:00', sala:'Sala 16'}]},
+ {period:'P2', code:'AGRI0192', name:'Biologia Celular Teórica', turma:'A2', prof:'Jose Alicandro Bezerra da Silva', occ:[
+   {day:'SEG', time:'14:00–16:00', sala:'Microbiologia Geral e Ambiental'}]},
+ {period:'P2', code:'AGRI0193', name:'Biologia Celular Prática', turma:'AA', prof:'Jose Alicandro Bezerra da Silva', occ:[
+   {day:'TER', time:'08:00–10:00', sala:'Citologia e Fisiologia Vegetal'}]},
+ {period:'P2', code:'AGRI0193', name:'Biologia Celular Prática', turma:'AB', prof:'Jose Alicandro Bezerra da Silva', occ:[
+   {day:'TER', time:'10:00–12:00', sala:'Citologia e Fisiologia Vegetal'}]},
+ {period:'P2', code:'AGRI0203', name:'Ética e Legislação', turma:'A2', prof:'Luciene do Nascimento Mendes', occ:[
+   {day:'QUI', time:'08:00–10:00', sala:'Sala 12'}]},
+ {period:'P2', code:'FISC0036', name:'Física Teórica I', turma:'A2', prof:'Militão Vieira Figueredo', occ:[
+   {day:'SEG', time:'14:00–16:00', sala:'Sala 03'},{day:'QUA', time:'14:00–16:00', sala:'Sala 8'}]},
+ {period:'P2', code:'AGRI0248', name:'Metodologia da Pesquisa', turma:'A2', prof:'Paulo Gustavo Serafim de Carvalho', occ:[
+   {day:'QUA', time:'08:00–10:00', sala:'Sala 16'}]},
+ {period:'P2', code:'QUIM0010', name:'Química Analítica — AGR', turma:'A2', prof:'Adriana Moreno Costa Silva', occ:[
+   {day:'SEG', time:'08:00–10:00', sala:'Sala 16'}]},
+ {period:'P2', code:'QUIM0010', name:'Química Analítica — AGR', turma:'AA', prof:'Adriana Moreno Costa Silva', occ:[
+   {day:'TER', time:'08:00–10:00', sala:'Química Analítica e Química do Solo'}]},
+ {period:'P2', code:'QUIM0010', name:'Química Analítica — AGR', turma:'AB', prof:'Adriana Moreno Costa Silva', occ:[
+   {day:'TER', time:'10:00–12:00', sala:'Química Analítica e Química do Solo'}]},
+ {period:'P2', code:'QUIM0011', name:'Química Orgânica', turma:'A2', prof:'Leonardo Sousa Cavalcanti', occ:[
+   {day:'QUI', time:'14:00–16:00', sala:'Sala 16'}]},
+ {period:'P2', code:'QUIM0011', name:'Química Orgânica', turma:'AA', prof:'Leonardo Sousa Cavalcanti', occ:[
+   {day:'SEX', time:'08:00–10:00', sala:'Química Orgânica e Bioquímica'}]},
+ {period:'P2', code:'QUIM0011', name:'Química Orgânica', turma:'AB', prof:'Leonardo Sousa Cavalcanti', occ:[
+   {day:'SEX', time:'10:00–12:00', sala:'Química Orgânica e Bioquímica'}]},
+
+ // ---- 4º Período (A4) ----
+ {period:'P4', code:'AGRI0082', name:'Experimentação Agrícola', turma:'A4', prof:'Marlon da Silva Garrido', occ:[
+   {day:'SEG', time:'08:00–10:00', sala:'Sala 12'},{day:'QUA', time:'08:00–10:00', sala:'Sala 12'}]},
+ {period:'P4', code:'FISC0042', name:'Física Experimental III', turma:'4A', prof:'Raquel Aline Pessoa Oliveira', occ:[
+   {day:'QUA', time:'16:00–18:00', sala:'Física Experimental I'}]},
+ {period:'P4', code:'FISC0042', name:'Física Experimental III', turma:'A4', prof:'Raquel Aline Pessoa Oliveira', occ:[
+   {day:'QUA', time:'14:00–16:00', sala:'Física Experimental I'}]},
+ {period:'P4', code:'FISC0039', name:'Física Teórica III', turma:'A4', prof:'Jaderson de Araújo Barros Barbosa', occ:[
+   {day:'TER', time:'14:00–16:00', sala:'Sala 16'},{day:'QUI', time:'08:00–10:00', sala:'Sala 16'}]},
+ {period:'P4', code:'CIEN0002', name:'Gênese Morfologia e Classificação de Solos', turma:'A4', prof:'Carmem Sueze Silva Miranda', occ:[
+   {day:'TER', time:'10:00–12:00', sala:'Sala 12'},{day:'QUI', time:'10:00–12:00', sala:'Sala 12'}]},
+ {period:'P4', code:'AGRI0213', name:'Mecânica e Resistência dos Materiais', turma:'A4', prof:'Dian Lourenconi', occ:[
+   {day:'TER', time:'16:00–18:00', sala:'Sala 12'},{day:'QUI', time:'16:00–18:00', sala:'Sala 12'}]},
+ {period:'P4', code:'AGRI0196', name:'Microbiologia Ambiental I', turma:'A4', prof:'Vanessa Polon Donzeli', occ:[
+   {day:'SEG', time:'10:00–12:00', sala:'Sala 12'}]},
+ {period:'P4', code:'AGRI0196', name:'Microbiologia Ambiental I', turma:'AA', prof:'Vanessa Polon Donzeli', occ:[
+   {day:'TER', time:'08:00–10:00', sala:'Microbiologia Geral e Ambiental'}]},
+ {period:'P4', code:'AGRI0196', name:'Microbiologia Ambiental I', turma:'AB', prof:'Vanessa Polon Donzeli', occ:[
+   {day:'QUA', time:'10:00–12:00', sala:'Microbiologia Geral e Ambiental'}]},
+ {period:'P4', code:'AGRI0038', name:'Criação de Animais Domésticos', turma:'A4', prof:'Jose Fernando Bibiano Melo', occ:[
+   {day:'QUI', time:'13:00–16:00', sala:'Sala 26'}]},
+ {period:'P4', code:'AGRI0252', name:'Topografia Planimetria', turma:'A4', prof:'Thais Pereira de Azevedo', occ:[
+   {day:'SEX', time:'08:00–12:00', sala:'Sala 12'}]},
+
+ // ---- 5º Período (A5) ----
+ {period:'P5', code:'ELET0028', name:'Eletrotécnica', turma:'A5', prof:'Daniel dos Santos Costa', occ:[
+   {day:'TER', time:'16:00–18:00', sala:'Sala 18'},{day:'QUI', time:'16:00–18:00', sala:'Sala 18'}]},
+
+ // ---- 6º Período (A6) ----
+ {period:'P6', code:'AGRI0214', name:'Elementos de Máquinas Agrícolas', turma:'A6', prof:'Jardenia Rodrigues Feitosa', occ:[
+   {day:'SEG', time:'14:00–16:00', sala:'Sala 12'},{day:'QUA', time:'14:00–16:00', sala:'Sala 12'}]},
+ {period:'P6', code:'AGRI0258', name:'Fitotecnia', turma:'A6', prof:'Acácio Figueiredo Neto', occ:[
+   {day:'TER', time:'10:00–12:00', sala:'Sala 16'},{day:'QUI', time:'10:00–12:00', sala:'Sala 16'}]},
+ {period:'P6', code:'AGRI0202', name:'Geoprocessamento e Sensoriamento Remoto', turma:'A6', prof:'Thais Pereira de Azevedo', occ:[
+   {day:'SEG', time:'08:00–10:00', sala:'Sala 14'},{day:'QUA', time:'08:00–10:00', sala:'Sala 14'}]},
+ {period:'P6', code:'AGRI0257', name:'Hidrologia', turma:'A6', prof:'Clovis Manoel Carvalho Ramos', occ:[
+   {day:'TER', time:'14:00–16:00', sala:'Sala 18'},{day:'QUI', time:'14:00–16:00', sala:'Sala 18'}]},
+ {period:'P6', code:'AGRI0254', name:'Manejo e Conservação do Solo e da Água', turma:'A6', prof:'Nelci Olszevski', occ:[
+   {day:'TER', time:'08:00–10:00', sala:'Sala 16'},{day:'QUI', time:'08:00–10:00', sala:'Sala 9'}]},
+ {period:'P6', code:'AGRI0255', name:'Meteorologia e Climatologia', turma:'A6', prof:'Não informado', occ:[
+   {day:'SEG', time:'10:00–12:00', sala:'Sala 14'},{day:'QUA', time:'10:00–12:00', sala:'Sala 14'},{day:'SAB', time:'08:00–12:00', sala:'Sala 9'}]},
+ {period:'P6', code:'AGRI0256', name:'Poluição Ambiental', turma:'A6', prof:'Miriam Cleide Cavalcante de Amorim', occ:[
+   {day:'SEG', time:'16:00–18:00', sala:'Sala 12'},{day:'QUA', time:'16:00–18:00', sala:'Sala 12'}]},
+
+ // ---- 8º Período (A8) ----
+ {period:'P8', code:'AGRI0088', name:'Agronegócio e Economia Rural', turma:'A8', prof:'Luciene do Nascimento Mendes', occ:[
+   {day:'SEG', time:'08:00–10:00', sala:'Sala 19'},{day:'QUA', time:'08:00–10:00', sala:'Sala 19'}]},
+ {period:'P8', code:'AGRI0201', name:'Avaliação e Perícias de Imóveis Rurais', turma:'A8', prof:'Ana Carolina de Sá Silva Lins', occ:[
+   {day:'TER', time:'08:00–10:00', sala:'Sala 9'}]},
+ {period:'P8', code:'AGRI0206', name:'Construções Rurais e Ambiência', turma:'A8', prof:'Ana Carolina de Sá Silva Lins', occ:[
+   {day:'TER', time:'13:00–16:00', sala:'Sala 10'},{day:'QUI', time:'13:00–16:00', sala:'Sala 10'}]},
+ {period:'P8', code:'AGRI0050', name:'Drenagem de Solos Agrícolas', turma:'A8', prof:'Clovis Manoel Carvalho Ramos', occ:[
+   {day:'SEX', time:'08:00–12:00', sala:'Sala 20'}]},
+ {period:'P8', code:'AGRI0226', name:'Empreendedorismo no Agronegócio e Plano de Negócios', turma:'A8', prof:'Luciene do Nascimento Mendes', occ:[
+   {day:'QUA', time:'10:00–12:00', sala:'Sala 13'}]},
+ {period:'P8', code:'AGRI0043', name:'Gestão e Legislação Ambiental', turma:'A8', prof:'Antonio Pereira Filho', occ:[
+   {day:'SEG', time:'16:00–18:00', sala:'Sala 13'},{day:'QUA', time:'16:00–18:00', sala:'Sala 13'}]},
+ {period:'P8', code:'AGRI0207', name:'Máquinas e Mecanização Agrícola I', turma:'A8', prof:'Jardenia Rodrigues Feitosa', occ:[
+   {day:'TER', time:'16:00–18:00', sala:'Sala 10'},{day:'QUI', time:'16:00–18:00', sala:'Sala 10'}]},
+ {period:'P8', code:'AGRI0031', name:'Saneamento Básico', turma:'A8', prof:'Miriam Cleide Cavalcante de Amorim', occ:[
+   {day:'SEG', time:'14:00–16:00', sala:'Sala 13'},{day:'QUA', time:'14:00–16:00', sala:'Sala 13'}]},
+
+ // ---- 10º Período / Estágio (turma "10") ----
+ {period:'P10', code:'AGRI0228', name:'Bem-estar e Ambiência Animal', turma:'10', prof:'Ana Carolina de Sá Silva Lins', occ:[
+   {day:'QUI', time:'08:00–10:00', sala:'Sala 11'}]},
+ {period:'P10', code:'AGRI0049', name:'Estágio', turma:'10', prof:'Vanessa Polon Donzeli', occ:[
+   {day:'QUI', time:'18:00–19:40', sala:'Sala Virtual — CENAMB 1'}]},
+ {period:'P10', code:'AGRI0235', name:'Instalações para o Processamento do Café', turma:'10', prof:'Dian Lourenconi', occ:[
+   {day:'QUI', time:'14:00–16:00', sala:'Sala 01'}]},
+ {period:'P10', code:'AGRI0057', name:'Núcleo Temático — Agricultura de Precisão', turma:'10', prof:'Daniel dos Santos Costa', occ:[
+   {day:'SEG', time:'18:00–21:20', sala:'Sala Virtual — CENAMB 3'}]},
+ {period:'P10', code:'AGRI0094', name:'Sociologia e Comunicação Rural', turma:'10', prof:'Luciene do Nascimento Mendes', occ:[
+   {day:'SEX', time:'14:00–18:00', sala:'Sala 11'}]},
+ {period:'P10', code:'AGRI0054', name:'Tecnologia Pós-Colheita', turma:'10', prof:'Acácio Figueiredo Neto', occ:[
+   {day:'SEX', time:'08:00–12:00', sala:'Sala 11'}]},
+ {period:'P10', code:'AGRI0215', name:'Trabalho de Conclusão de Curso I', turma:'10', prof:'Marlon da Silva Garrido', occ:[
+   {day:'TER', time:'18:00–18:50', sala:'Sala Virtual — CENAMB 2'}]},
+ {period:'P10', code:'AGRI0216', name:'Trabalho de Conclusão de Curso II', turma:'10', prof:'Marlon da Silva Garrido', occ:[
+   {day:'TER', time:'18:50–19:40', sala:'Sala Virtual — CENAMB 2'}]},
+
+ // ---- Turmas Mistas (abertas a vários períodos) ----
+ {period:'MIX', code:'MATM0117', name:'Geometria Analítica', turma:'TX', prof:'Alexandre Ramalho Silva', occ:[
+   {day:'TER', time:'16:00–18:00', sala:'NT 03'},{day:'QUI', time:'16:00–18:00', sala:'NT 03'}]},
+ {period:'MIX', code:'QUIM0018', name:'Química Geral Prática', turma:'AX', prof:'Fernanda Santos Carvalho dos Anjos', occ:[
+   {day:'QUI', time:'10:00–12:00', sala:'Química Geral'}]},
+ {period:'MIX', code:'QUIM0018', name:'Química Geral Prática', turma:'BX', prof:'Andréa de Vasconcelos Ferraz', occ:[
+   {day:'QUA', time:'16:00–18:00', sala:'Química Geral'}]},
+];
+
+const byPeriod = {};
+periodOrder.forEach(p => byPeriod[p] = []);
+courses.forEach(c => byPeriod[c.period].push(c));
+
+const nav = document.getElementById('periodNav');
+const wrap = document.getElementById('periods');
+
+periodOrder.forEach((p, i) => {
+  const list = byPeriod[p];
+  if(list.length === 0) return;
+
+  const btn = document.createElement('button');
+  btn.textContent = periodLabel[p].replace(' Período','º Per.').replace('º Período','º Per.') + ' (' + list.length + ')';
+  btn.textContent = (p==='P10' ? '10º/Estágio' : p==='MIX' ? 'Mistas' : p.replace('P','') + 'º Período') + ' (' + list.length + ')';
+  btn.className = i===0 ? 'active' : '';
+  btn.dataset.period = p;
+  btn.onclick = () => selectPeriod(p);
+  nav.appendChild(btn);
+
+  const section = document.createElement('div');
+  section.className = 'period-section' + (i===0 ? ' active' : '');
+  section.id = 'period-' + p;
+
+  const title = document.createElement('div');
+  title.className = 'period-title';
+  title.innerHTML = periodLabel[p] + ' <small>' + list.length + ' turmas</small>';
+  section.appendChild(title);
+
+  const sub = document.createElement('div');
+  sub.className = 'period-sub';
+  sub.textContent = periodSub[p];
+  section.appendChild(sub);
+
+  const grid = document.createElement('div');
+  grid.className = 'grid';
+
+  list.forEach(c => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.setProperty('--dept', 'var(--' + deptOf(c.code) + ')');
+    const timesHtml = c.occ.map(o => `<div class="time-row">${o.day} · ${o.time} <span class="place">— ${o.sala}</span></div>`).join('');
+    card.innerHTML = `
+      <span class="badge">${c.turma}</span>
+      <div class="code">${c.code}</div>
+      <h3>${c.name}</h3>
+      <div class="times">${timesHtml}</div>
+      <div class="meta"><span><b>Prof.:</b> ${c.prof}</span></div>
+    `;
+    grid.appendChild(card);
+  });
+
+  section.appendChild(grid);
+  wrap.appendChild(section);
+});
+
+function selectPeriod(p){
+  document.querySelectorAll('#periodNav button').forEach(b => b.classList.toggle('active', b.dataset.period === p));
+  document.querySelectorAll('.period-section').forEach(s => s.classList.toggle('active', s.id === 'period-' + p));
+}
+</script>
+</body>
+</html>
